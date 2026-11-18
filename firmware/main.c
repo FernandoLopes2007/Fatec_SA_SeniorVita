@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
@@ -504,6 +505,15 @@ static const uint8_t icon_wifi_off[32] = {
     0x00, 0x0C, 0x01, 0x86, 0x00, 0x03, 0x00, 0x01
 };
 
+/* Sino 16x16: aparece no canto inferior esquerdo quando a temperatura
+ * ultrapassa TEMPERATURA_LIMITE (40 C). */
+static const uint8_t icon_bell[32] = {
+    0x00, 0x00, 0x07, 0xE0, 0x0C, 0x30, 0x08, 0x10,
+    0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18,
+    0x10, 0x08, 0x10, 0x08, 0x30, 0x0C, 0x7F, 0xFE,
+    0x00, 0x00, 0x00, 0x00, 0x01, 0x80, 0x00, 0x00
+};
+
 
 /* ============================================================
  * BUFFER OLED
@@ -967,6 +977,13 @@ static void atualizar_oled(
         48,
         mqtt_status ? icon_wifi : icon_wifi_off
     );
+
+    /* Alerta visual: sino no canto inferior esquerdo somente acima de 40 C.
+     * Sem leitura valida, o sino permanece apagado. */
+    if (leitura_valida && temperatura > TEMPERATURA_LIMITE)
+    {
+        oled_draw_icon_16x16(0, 48, icon_bell);
+    }
 
     if (oled_refresh() != ESP_OK)
     {
